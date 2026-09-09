@@ -1,0 +1,15 @@
+Goal: Determine whether or not Yolo Depth models can reliabley detect depth of a person from camera
+
+Method:
+1. Evaluate result of depth model on labeled dataset of images, take the MSE pixel wise (NYU Depth Dataset)
+	cite: https://cs.nyu.edu/~fergus/datasets/nyu_depth_v2.html
+	investigate: scale mismatch
+2. Integrate depth model with the object detection model to estimate the depth of a single object
+	a. estimate the depth of the center most point of the bounding box for that person? their face?
+3. Create a dataset of images at varying distances from the camera X varying FOVs (interval size TBD)
+	a. How do I capture images from the camera feed? APIs? Python Script?
+4. Evaluate the depth model on this new dataset to see how well it performs at different distances and FOVs 
+	a. is there a need for fine tuning/ calibration?
+5. Develop a function f(FOV, distance) that maps predicted depth to actual depth. Evaluate MSE of this function
+	a. Is our function MSE > raw MSE? 
+
