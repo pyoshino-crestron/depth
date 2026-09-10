@@ -1,3 +1,6 @@
+import numpy as np
+from pathlib import Path
+from PIL import Image
 
 # get the corresponding depth map for a given image. used when we have a labeled dataset of images and depth maps.
 def get_ground_truth_depth(image_path):

@@ -5,9 +5,16 @@ Method:
 	cite: https://cs.nyu.edu/~fergus/datasets/nyu_depth_v2.html
 	investigate: scale mismatch
 2. Integrate depth model with the object detection model to estimate the depth of a single object
-	a. estimate the depth of the center most point of the bounding box for that person? their face?
+	a. Object detection model: Yolo26n -> detects the object and returns a bounding box
+	b. Depth model: returns a depth map of the image
+	c. Use the bounding box to extract the depth of the center most point of the bounding box
 3. Create a dataset of images at varying distances from the camera X varying FOVs (interval size TBD)
-	a. How do I capture images from the camera feed? APIs? Python Script?
+	a. Write a python script that automates the image capture process, sends visca commands to control FOV, uses the onnx pose
+	detection model for inference on the image, calculates the depth of the center most point of the bounding box, writes the 
+	actual depth, predicted depth, FOV to a csv file
+	b. The script will capture x images at each distance, at each distance, we will capture y images at each FOV
+	c. We will capture images at distances ranging from 3 to 30 meters with n meter intervals
+	d. We will start at maximum FOV and decrease the FOV by _ until we reach the minimum FOV or the person is undetectable
 4. Evaluate the depth model on this new dataset to see how well it performs at different distances and FOVs 
 	a. is there a need for fine tuning/ calibration?
 5. Develop a function f(FOV, distance) that maps predicted depth to actual depth. Evaluate MSE of this function

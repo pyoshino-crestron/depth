@@ -1,11 +1,14 @@
 import requests
 import numpy as np
 import cv2
+import socket
 from datetime import datetime
 from pathlib import Path
 
 from .yolotest import DepthObjectDetector
+from ..viscaMappings12 import P12STEP, FOVLOOKUP12
 
+VISCA_PORT = 5500
 
 # image capture
 def capture(camera):
@@ -28,8 +31,26 @@ def capture(camera):
 
 	return img
 
+# control FOV
+def changeFOV(camera, zoom):
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+		s.settimeout(5)
+		s.connect((camera, VISCA_PORT))
+		command = f'81 01 04 07 {zoom} FF'
+		cmd = bytes.fromhex(command)
+		s.sendall(cmd)
+		# get response 
+		res = s.recv(1024)
+	return res
+
 # Script entry point 
 if __name__ == "__main__":
 	# load object detector
 	detector = DepthObjectDetector()
-	capture('172.30.144.182:86')
+	# capture image
+	img = capture('172.30.144.182:86')
+	# get depth of the center of the detected object
+	object_box = detector.detect_objects(img)
+	depth_map = detector.detect_depth(img)
+	predicted = detector.get_center_depth(depth_map, object_box[0])
+	print(f"Predicted depth of the center of the detected object: {predicted}")
