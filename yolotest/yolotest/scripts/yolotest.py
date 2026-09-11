@@ -22,7 +22,7 @@ class DepthObjectDetector:
     # function to classify objects in Image
     def detect_objects(self, image_path):
         # Run YOLO inference
-        results = self.pose_model.predict(image_path, save=True, verbose=False)
+        results = self.pose_model.predict(image_path, save=False, verbose=False)
         main = results[0]
         xyxy = main.boxes.xyxy.cpu().numpy() 
         return xyxy
@@ -30,7 +30,7 @@ class DepthObjectDetector:
     # function to ingest a photo and predict depth
     def detect_depth(self, image_path):
         # Run YOLO inference
-        results = self.depth_model.predict(image_path, save=True, verbose=False)
+        results = self.depth_model.predict(image_path, save=False, verbose=False)
         result = results[0]
         # Extract the depth map
         depth = result.depth.data.detach().numpy()
