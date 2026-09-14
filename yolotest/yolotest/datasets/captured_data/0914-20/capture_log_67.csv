@@ -1,0 +1,9 @@
+filename,true_distance,visca,prediction
+capture_0_FOV0.jpg,20,0,prediction
+capture_0_FOV2100.jpg,20,2100,prediction
+capture_0_FOV4200.jpg,20,4200,prediction
+capture_0_FOV6300.jpg,20,6300,prediction
+capture_0_FOV8400.jpg,20,8400,prediction
+capture_0_FOV10500.jpg,20,10500,prediction
+capture_0_FOV12600.jpg,20,12600,prediction
+capture_0_FOV14700.jpg,20,14700,prediction
