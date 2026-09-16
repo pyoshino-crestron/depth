@@ -20,3 +20,10 @@ Method:
 5. Develop a function f(FOV, distance) that maps predicted depth to actual depth. Evaluate MSE of this function
 	a. Is our function MSE > raw MSE? 
 
+Current Design:
+
+The user sets the FOV interval (how many degrees delta as the camera iterates through FOV levels), the camera they would ike to test, where
+they would like images to be stored, the ground truth depth of the test dummy (based on the center), and the number of images to take at every FOV
+value. 
+A class is used to instatiate a camera object. This camera object then pans in
+
