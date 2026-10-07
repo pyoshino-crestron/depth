@@ -23,6 +23,12 @@ var/
 *.egg
 .Python
 
+# ignore images
+/yolotest/yolotest/datasets/**/*.jpg
+/yolotest/yolotest/datasets/**/*.jpeg
+/yolotest/yolotest/datasets/**/*.png
+runs/detect/depth-estimation/
+
 # VS Code
 .vscode/
 .vs/

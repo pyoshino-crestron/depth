@@ -38,6 +38,7 @@
     <Folder Include="yolotest\yolotest\camera\" />
     <Folder Include="yolotest\yolotest\detection\" />
     <Folder Include="yolotest\yolotest\scripts\" />
+    <Folder Include="yolotest\yolotest\streaming\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.12" />

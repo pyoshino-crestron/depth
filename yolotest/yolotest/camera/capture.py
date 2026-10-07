@@ -11,13 +11,13 @@ from .visca import VISCA_PORT, change_fov
 
 # a class to help with camera objects and capturing images and changing FOVs
 class CameraCapture:
-    def __init__(self, camera: str, output_dir: Path, port: int = VISCA_PORT) -> None:
+    def __init__(self, camera: str, output_dir: Path = None, port: int = VISCA_PORT) -> None:
         self.camera = camera
         self.output_dir = output_dir
         self.port = port
 
-    # captures an image and writes it to our photos directory
-    def capture(self) -> Path:
+    # captures an image and returns a cv2 image object
+    def capture(self) -> np.ndarray:
         # capture an image from camera via api
         response = requests.get(f"http://{self.camera}:86/onvif-http/snapshot?ch2", timeout=10)
         response.raise_for_status()
@@ -34,7 +34,11 @@ class CameraCapture:
         output_dir.mkdir(parents=True, exist_ok=True)
         # open connection to camera
         with socket.create_connection((self.camera, self.port)) as connection:
-            for index in range(0, len(FOVLOOKUPP12), 100):
+            for index in range(0, len(FOVLOOKUPP12), 5):
+                # set multiplier for number of images to capture at each FOV (double at higher FOVs)
+                multiplier = 1;
+                if index < (len(FOVLOOKUPP12) - 1) // 2:
+                    multiplier = 2;
                 # set visca command for zoom
                 visca = index * P12STEP
                 fov = FOVLOOKUPP12[index]
@@ -42,7 +46,10 @@ class CameraCapture:
                 # move camera 
                 change_fov(connection, zoom)
                 # capture images at set FOV x Distance
-                for image_index in range(images):
+                for image_index in range(images * multiplier):
                     img  = self.capture()
-                    cv2.imwrite(f"{output_dir}/{fov}-{image_index}.jpg", img)
+                    # write images to ouptut directory 
+                    cv2.imwrite(f"{output_dir}/{fov}--{image_index}.jpg", img)
         return output_dir
+
+    
