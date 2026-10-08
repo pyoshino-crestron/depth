@@ -27,7 +27,7 @@ var/
 /yolotest/yolotest/datasets/**/*.jpg
 /yolotest/yolotest/datasets/**/*.jpeg
 /yolotest/yolotest/datasets/**/*.png
-runs/detect/depth-estimation/
+runs/detect/gitdepth-estimation/
 
 # VS Code
 .vscode/

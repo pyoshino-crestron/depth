@@ -31,7 +31,7 @@ def data_clean(data_directory):
     # drop rows that are na for prediction
     cleaned_data = data[data["prediction"] != -1]
     # split the dataset
-    x = cleaned_data[["prediction", "fov"]]
+    x = cleaned_data[["prediction", "fov", "size"]]
     y = cleaned_data[["residuals", "true_distance"]]
     return x,y
     
@@ -101,22 +101,6 @@ def evaluate_true_distance_model(model, x, y, cv=5):
     ).mean()
 
     return mae
-
-# perform grid search for hyperparameters
-def hyperparam_study_splines(model, x, y):
-    # parameter search space for splines
-    param_grid = {"splinetransformer__n_knots": [3, 5, 7, 9], "splinetransformer__degree": [1,2,3]}
-    # perform search
-    search = GridSearchCV(
-    model,
-    param_grid,
-    cv=5,
-    scoring="neg_mean_absolute_error")
-    search.fit(x, y['residuals'])
-    # return best model and mae
-    best_model = search.best_estimator_
-    best_mae = -search.best_score_
-    return best_model, best_mae
 
 # helper function to save models
 def save_model(model, model_name):

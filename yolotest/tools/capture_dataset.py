@@ -3,6 +3,7 @@ import csv
 from pathlib import Path
 import argparse
 import random
+from .utils import compute_box_size
 from yolotest.yolotest.camera.capture import CameraCapture
 from yolotest.yolotest.detection.detector import DepthObjectDetector
 import cv2
@@ -17,15 +18,25 @@ def inference(distance, output_dir, run_id):
     with csv_path.open("a", newline="") as file:
         writer = csv.writer(file)
         if not csv_exists:
-            writer.writerow(["filename", "true_distance", "prediction"])
+            writer.writerow(["filename", "true_distance", "prediction", "size"])
         # search all images in output directory
         for image_path in sorted(output_dir.glob("*.jpg")):
             # convert to cv image
             image = cv2.imread(str(image_path))
             # make prediction, retrieve value from dictionary and write to our csv file
-            depths = detector.return_human_depth(image, streaming=False, run_id=run_id)
+            result = detector.return_human_depth(image, streaming=False, run_id=run_id)
+            # handle no detection casegit 
+            if not result:
+                print(f"No human detected in {image_path.name}")
+                writer.writerow([image_path.name, distance, -1, -1])
+                continue
+            else:
+                depths,_,_ = result
+            # get depth of the first detected human in the image, if any
             prediction = next(iter(depths.values()), -1) if depths is not None else -1
-            writer.writerow([image_path.name, distance, prediction])
+            # compute box size for the first detected human in the image, if any
+            size = compute_box_size(next(iter(depths.keys()), None)) if depths is not None else -1
+            writer.writerow([image_path.name, distance, prediction, size])
 
 # function to perform image capture
 def intake(camera_ip, distance, images):

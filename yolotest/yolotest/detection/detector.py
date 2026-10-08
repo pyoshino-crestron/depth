@@ -10,8 +10,8 @@ class DepthObjectDetector:
         self.depth_model = YOLO(depth_model)
         self.pose_model = YOLO(pose_model)
 
-    # function to detect a human in the image
-    def detect_objects(self, image: np.ndarray, streaming: bool = False, run_id=None, include_keypoints: bool = False):
+    # function to detect a human in the image -> persons bounding boxes, keypoints, and confidences
+    def detect_objects(self, image: np.ndarray, streaming: bool = False, run_id=None):
         # build parameter dictionary - save images when gathering no save when streaming
         if not run_id:
             kwargs = {
@@ -25,36 +25,29 @@ class DepthObjectDetector:
                 "project": "depth-estimation",
                 "name": str(run_id)
             }
-
         # run our pose model
         result = self.pose_model.predict(image, **kwargs)[0]
         # check to see if something was found
         if result.boxes is None or len(result.boxes) == 0:
             return None
+        # get the list of classes detected in the image
         classes = result.boxes.cls.cpu().numpy()
         # extract bounding box of person objects
         person = result.boxes.xyxy.cpu().numpy()[classes == 0]
-        if include_keypoints:
-            if not streaming and len(person) != 1:
-                print("Not the right amount of people detected")
-                return None
-            if result.keypoints is None:
-                return person, None, None
-            keypoints = result.keypoints.xy.cpu().numpy()[classes == 0]
-            if result.keypoints.conf is None:
-                confidences = None
-            else:
-                confidences = result.keypoints.conf.cpu().numpy()[classes == 0]
-            return person, keypoints, confidences
-        # if streaming return bounding boxes of all people detected
-        if streaming:
-            return person
-        # assume 1 person in frame, return first person detectoin xyxy (data collection)
-        if len(person) != 1:
-            print("Not the right amount of people detected")
+        # check for streaming incompatibility
+        if not streaming and len(person) != 1:
+            print("data collection mode requires exactly one person in the frame")
             return None
-        # return bounding box of person
-        return person[0]
+        # if we are returning keypoints, check if they exist and extract them
+        if result.keypoints is None:
+            return person, None, None
+        keypoints = result.keypoints.xy.cpu().numpy()[classes == 0]
+        # check for kepoints confidences and extract them
+        if result.keypoints.conf is None:
+            confidences = None
+        else:
+            confidences = result.keypoints.conf.cpu().numpy()[classes == 0]
+        return person, keypoints, confidences
 
     # return the depth map of our image
     def detect_depth(self, image: np.ndarray) -> list[any]:
@@ -62,40 +55,34 @@ class DepthObjectDetector:
         depth_data = results[0].depth.data.cpu().numpy()
         return np.squeeze(depth_data).astype(np.float32)
 
-    # return the depth of a person from an image - this is the main function 
-    def return_human_depth(self, image: np.ndarray, streaming=False, run_id=None, return_face_points=False, return_depth_map=False):
+    # return the dpeth of each detected human in the image, along with their face center and depth map
+    def return_human_depth(self, image: np.ndarray, streaming=False, run_id=None):
         # branch for streaming service:
         depth_map = self.detect_depth(image)
-        detected = self.detect_objects(image, streaming, run_id, include_keypoints=True)
-        # check if a person was detected
+        detected = self.detect_objects(image, streaming, run_id)
         if detected is None:
-            if return_depth_map:
-                return {}, {}, depth_map
             return None
         people, keypoints, confidences = detected
+        # check if a person was detected
         if people is None or len(people) == 0:
-            if return_depth_map:
-                return {}, {}, depth_map
             return None
         # find each face center and sample its depth
         box_to_depth = {}
         box_to_face_center = {}
         for index, person in enumerate(people):
             face_center = None
+            # get confidences and key points and calculate the face center if they exist
             if keypoints is not None:
                 person_confidences = None if confidences is None else confidences[index]
                 face_center = self.get_face_center(keypoints[index], person_confidences, image.shape)
+            # fall back to center of bounding box for depth else depth at cetner face
             if face_center is None:
                 depth = self.get_center_depth(depth_map, person, image.shape)
             else:
                 depth = self.get_depth_at_point(depth_map, face_center, image.shape)
                 box_to_face_center[tuple(person)] = face_center
             box_to_depth[tuple(person)] = depth
-        if return_depth_map:
-            return box_to_depth, box_to_face_center, depth_map
-        if return_face_points:
-            return box_to_depth, box_to_face_center
-        return box_to_depth
+        return box_to_depth, box_to_face_center, depth_map
 
     # get the center of the face by averaging the keypoints of the face
     def get_face_center(self, keypoints, confidences, image_shape):
