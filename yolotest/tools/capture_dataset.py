@@ -55,4 +55,4 @@ def main(camera_ip, distance, images, output_dir=None, run_id=None):
 
 if __name__ == "__main__":
     output = Path(__file__).resolve().parent.parent / "yolotest" / "datasets"
-    main("10.79.59.130", 5.169, 3)
+    main("10.79.59.130", 7.544, 1)

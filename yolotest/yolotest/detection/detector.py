@@ -6,7 +6,7 @@ import numpy as np
 from ultralytics import YOLO
 
 class DepthObjectDetector:
-    def __init__(self, pose_model: str = "yolo26n.pt", depth_model: str = "yolo26n-depth.pt") -> None:
+    def __init__(self, pose_model: str = "yolo26n-pose.pt", depth_model: str = "yolo26n-depth.pt") -> None:
         self.depth_model = YOLO(depth_model)
         self.pose_model = YOLO(pose_model)
 

@@ -39,6 +39,7 @@ def get_current_fov(connection: socket.socket) -> str:
                 continue
             # Zoom inquiry response
             if msg.startswith(b"\x90\x50"):
+                ## Y0 50 0p 0q 0r 0s FF
                 # extract zoom value from response
                 visca = int("".join(f"{b:x}"[-1] for b in msg[2:6]), 16)
                 print(f"Current VISCA zoom value: {visca}")
